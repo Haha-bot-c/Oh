@@ -1,14 +1,26 @@
+using System;
+
+interface IDamage
+{
+    int GetDamage();
+}
 
 class Weapon
 {
-    private Damage _damage;
+    private IDamage _damage;
     private int _bullets;
+
+    public Weapon(IDamage damage, int bullets)
+    {
+        _damage = damage;
+        _bullets = bullets;
+    }
 
     public void Fire(Player player)
     {
         if (_bullets > 0)
         {
-            player.TakeDamage(_damage.GetDamage());
+            player.TakeDamage(_damage);
             _bullets--;
         }
     }
@@ -16,30 +28,58 @@ class Weapon
 
 class Player
 {
+    const int MaxHealth = 100;
+    const int MinHealth = 0;
+
     private int _health;
 
-    public void TakeDamage(int damage)
-    {   
-        if(_health > 0 )
+    public int Health
+    {
+        get { return _health; }
+        set { _health = Math.Max(MinHealth, Math.Min(MaxHealth, value)); } 
+    }
+
+    public Player(int health)
+    {
+        Health = health;
+    }
+
+    public void TakeDamage(IDamage damage)
+    {
+        if (Health > 0)
         {
-            _health -= damage;
+            Health -= damage.GetDamage(); 
         }
     }
 }
+
 
 class Bot
 {
     private Weapon _weapon;
 
+    public Bot(Weapon weapon)
+    {
+        _weapon = weapon;
+    }
+
     public void OnSeePlayer(Player player)
     {
-        _weapon.Fire(player);
+        if (_weapon != null)
+        {
+            _weapon.Fire(player);
+        }
     }
 }
 
-class Damage
+class Damage : IDamage
 {
-    private uint _damage = 100;
+    private uint _damage;
+
+    public Damage(uint damage)
+    {
+        _damage = damage;
+    }
 
     public int GetDamage()
     {
