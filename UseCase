@@ -148,12 +148,13 @@ public class Cart
 
     public Order PrintOrder()
     {
-        return new Order { Paylink = "https://payment.link" };
+        return new Order();
     }
 }
+
 public class Order
-{   
-    public string Paylink { get; set; }
+{
+    public string Paylink { get; private set; } = "https://PayMent.link.ru";
 }
 
 
