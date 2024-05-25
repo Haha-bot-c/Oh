@@ -1,0 +1,160 @@
+using System;
+using System.Collections.Generic;
+
+
+public class Program
+{
+    public static void Main()
+    {
+        Good iPhone12 = new Good("IPhone 12");
+        Good iPhone11 = new Good("IPhone 11");
+        Warehouse warehouse = new Warehouse();
+        Shop shop = new Shop(warehouse);
+
+        warehouse.Deliver(iPhone12, 10);
+        warehouse.Deliver(iPhone11, 1);
+
+        Console.WriteLine("Товары на складе:");
+        shop.PrintWarehouseStock();
+        Cart cart = shop.GetCart();
+        cart.Add(iPhone12, 4);
+        cart.Add(iPhone11, 3);
+        cart.PrintCart();
+
+        Console.WriteLine(cart.PrintOrder().Paylink);
+        cart.Add(iPhone12, 9); 
+
+        Console.WriteLine("Товары на складе после заказа:");
+        shop.PrintWarehouseStock();
+
+        Console.ReadLine();
+    }
+}
+
+public class Good
+{
+    public string Name { get; private set; }
+
+    public Good(string name)
+    {
+        Name = name;
+    }
+}
+
+
+public class Warehouse
+{
+    private Dictionary<Good, int> _stock = new Dictionary<Good, int>();
+
+    public void Deliver(Good good, int quantity)
+    {
+        if (_stock.ContainsKey(good))
+        {
+            _stock[good] += quantity;
+        }
+        else
+        {
+            _stock[good] = quantity;
+        }
+    }
+
+    public bool TryReserve(Good good, int quantity)
+    {
+        if (_stock.ContainsKey(good) && _stock[good] >= quantity)
+        {
+            _stock[good] -= quantity;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public void PrintStock()
+    {
+        foreach (var item in _stock)
+        {
+            Console.WriteLine($"{item.Key.Name} - {item.Value} шт.");
+        }
+    }
+
+
+}
+
+public class Shop
+{
+    private Warehouse _warehouse;
+
+    public Shop(Warehouse warehouse)
+    {
+        _warehouse = warehouse;
+    }
+
+    public Cart GetCart()
+    {
+        return new Cart(this);
+    }
+
+    public bool ReserveGoods(Good good, int quantity)
+    {
+        return _warehouse.TryReserve(good, quantity);
+    }
+
+    public void PrintWarehouseStock()
+    {
+        _warehouse.PrintStock();
+    }
+}
+
+public class Cart
+{
+    private Shop _shop;
+    private Dictionary<Good, int> _items = new Dictionary<Good, int>();
+
+    public Cart(Shop shop)
+    {
+       _shop = shop;
+    }
+
+    public void Add(Good good, int quantity)
+    {
+        if (_shop.ReserveGoods(good, quantity))
+        {
+            if (_items.ContainsKey(good))
+            {
+                _items[good] += quantity;
+            }
+            else
+            {
+                _items[good] = quantity;
+            }
+            Console.WriteLine($"{quantity} шт. {good.Name} добавлено в корзину.");
+        }
+        else
+        {
+            Console.WriteLine($"Ошибка: недостаточно {good.Name} на складе.");
+        }
+    }
+
+    public void PrintCart()
+    {
+        Console.WriteLine("Товары в корзине:");
+
+        foreach (var item in _items)
+        {
+            Console.WriteLine($"{item.Key.Name} - {item.Value} шт.");
+        }
+    }
+
+    public Order PrintOrder()
+    {
+        return new Order { Paylink = "https://payment.link" };
+    }
+}
+public class Order
+{   
+    public string Paylink { get; set; }
+}
+
+
+
