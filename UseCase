@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-
+using System.Text;
 
 public class Program
 {
@@ -22,7 +22,7 @@ public class Program
         cart.PrintCart();
 
         Console.WriteLine(cart.PrintOrder().Paylink);
-        cart.Add(iPhone12, 9); 
+        cart.Add(iPhone12, 9);
 
         Console.WriteLine("Товары на складе после заказа:");
         shop.PrintWarehouseStock();
@@ -41,13 +41,18 @@ public class Good
     }
 }
 
-
 public class Warehouse
 {
     private Dictionary<Good, int> _stock = new Dictionary<Good, int>();
 
     public void Deliver(Good good, int quantity)
     {
+        if (quantity <= 0)
+        {
+            Console.WriteLine("Количество товара должно быть положительным.");
+            return;
+        }
+
         if (_stock.ContainsKey(good))
         {
             _stock[good] += quantity;
@@ -60,10 +65,15 @@ public class Warehouse
 
     public bool TryReserve(Good good, int quantity)
     {
+        if (quantity <= 0)
+        {
+            Console.WriteLine("Количество товара должно быть положительным.");
+            return false;
+        }
+
         if (_stock.ContainsKey(good) && _stock[good] >= quantity)
         {
             _stock[good] -= quantity;
-
             return true;
         }
 
@@ -72,13 +82,15 @@ public class Warehouse
 
     public void PrintStock()
     {
+        StringBuilder stringBiilder = new StringBuilder();
+
         foreach (var item in _stock)
         {
-            Console.WriteLine($"{item.Key.Name} - {item.Value} шт.");
+            stringBiilder.AppendLine($"{item.Key.Name} - {item.Value} шт.");
         }
+
+        Console.WriteLine(stringBiilder.ToString());
     }
-
-
 }
 
 public class Shop
@@ -113,11 +125,17 @@ public class Cart
 
     public Cart(Shop shop)
     {
-       _shop = shop;
+        _shop = shop;
     }
 
     public void Add(Good good, int quantity)
     {
+        if (quantity <= 0)
+        {
+            Console.WriteLine("Количество товара должно быть положительным.");
+            return;
+        }
+
         if (_shop.ReserveGoods(good, quantity))
         {
             if (_items.ContainsKey(good))
@@ -138,12 +156,15 @@ public class Cart
 
     public void PrintCart()
     {
-        Console.WriteLine("Товары в корзине:");
+        StringBuilder stringBiilder = new StringBuilder();
+        stringBiilder.AppendLine("Товары в корзине:");
 
         foreach (var item in _items)
         {
-            Console.WriteLine($"{item.Key.Name} - {item.Value} шт.");
+            stringBiilder.AppendLine($"{item.Key.Name} - {item.Value} шт.");
         }
+
+        Console.WriteLine(stringBiilder.ToString());
     }
 
     public Order PrintOrder()
@@ -156,6 +177,3 @@ public class Order
 {
     public string Paylink { get; private set; } = "https://PayMent.link.ru";
 }
-
-
-
